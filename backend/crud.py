@@ -1,15 +1,36 @@
 from sqlalchemy.orm import Session
 from models import Medicamento, Categoria
 from schemas import MedicamentoCreate, MedicamentoUpdate, CategoriaCreate, CategoriaUpdate
+import math
+def readMedicamento(db: Session, nome: str = None, page: int = 1, limit: int = 10):
+    query = db.query(Medicamento)
+    if nome:
+        query = query.filter(Medicamento.nome.ilike(f"%{nome}%"))
+    
+    totalQuery = query.count()
+    if limit > 0:
+        totalPage = math.ceil(totalQuery/limit)
+    else:
+        totalPage = 0
+    pular = (page - 1) * limit
+    dados = query.offset(pular).limit(limit).all()
 
-def readMedicamento(db: Session):
-    return db.query(Medicamento).all()
+    return {
+        "data": dados,
+        "total": totalQuery,
+        "page": page,
+        "limit": limit,
+        "pages": totalPage
+    }
 
 def getMedicamento(db: Session, medicamento_id: int):
     return db.query(Medicamento).filter(Medicamento.id == medicamento_id).first()
 
 def createMedicamento(db: Session, dados: MedicamentoCreate):
     medicamento = Medicamento(**dados.model_dump())
+    categoriaValidacao = getCategoria(db, dados.categoria_id)
+    if not categoriaValidacao:
+        return None
     db.add(medicamento)
     db.commit()
     db.refresh(medicamento)
@@ -43,8 +64,25 @@ def deleteMedicamento(db: Session, medicamento_id: int):
         return None
     db.delete(medicamento)
     db.commit()
-def readCategoria(db: Session):
-    return db.query(Categoria).all()
+def readCategoria(db: Session, nome: str = None, page: int = 1, limit: int = 10):
+    query = db.query(Categoria)
+    if nome:
+        query = query.filter(Categoria.nome.ilike(f"%{nome}%"))
+    totalQuery = query.count()
+    if limit > 0:
+        totalPage = math.ceil(totalQuery/limit)
+    else:
+        totalPage = 0
+
+    pular = (page - 1) * limit
+    dados = query.offset(pular).limit(limit).all()
+    return {
+        "data": dados,
+        "total": totalQuery,
+        "page": page,
+        "limit": limit,
+        "pages": totalPage,
+    }
 
 def getCategoria(db: Session, categoria_id: int):
     return db.query(Categoria).filter(categoria_id == Categoria.id).first()

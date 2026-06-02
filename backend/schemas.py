@@ -6,6 +6,12 @@ class Unidade(str, Enum):
     ml = "ml"
     mg = "mg"
     g = "g"
+
+class FormaPagamento(str, Enum):
+    pix = "Pix"
+    credito = "Crédito"
+    debito = "débito"
+    dinheiro = "Dinheiro"
 class CategoriaCreate(BaseModel):
     nome: str
 
@@ -15,6 +21,7 @@ class CategoriaUpdate(BaseModel):
 class CategoriaResponse(BaseModel):
     id: int
     nome: str
+    model_config = ConfigDict(from_attributes=True)
 
 class MedicamentoCreate(BaseModel):
     nome: str
@@ -36,4 +43,20 @@ class MedicamentoResponse(BaseModel):
     preco: float
     quantidade: int
     unidade: Unidade
-    categoria_id: int
+    categoria: CategoriaResponse
+    model_config = ConfigDict(from_attributes=True)
+
+class PaginatedMedicamento(BaseModel):
+    data: list[MedicamentoResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int
+
+class PaginatedCategoria(BaseModel):
+    data: list[CategoriaResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int
+
