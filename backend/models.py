@@ -31,8 +31,14 @@ class ItemVenda(Base):
     __tablename__ = "item_venda"
     id = Column(Integer, primary_key=True)
     quantidade = Column(Integer)
-    precoUnidade = Column(Float)
+    precoUnitario = Column(Float)
     venda_id = Column(Integer, ForeignKey("venda.id"))
     medicamento_id = Column(Integer, ForeignKey("medicamento.id"))
     venda = relationship("Venda", back_populates="itens")
     medicamento = relationship("Medicamento")
+
+class Usuario(Base):
+    __tablename__ = "usuario"
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, index=True) 
+    senha = Column(String)

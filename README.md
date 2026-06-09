@@ -24,4 +24,4 @@ uvicorn main:app --reload
 
 .venv\Scripts\activate
 cd frontend
-streamlit run app.py
+streamlit run main.py
