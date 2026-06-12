@@ -16,14 +16,14 @@ st.title("Editar Medicamento" if modo_edicao else "Novo Medicamento")
 
 resp_cat = requests.get(f"{API_URL}/categoria", params={"limit": 100})
 if resp_cat.status_code != 200:
-    st.error("Erro ao carregar categorias.")
+    st.toast("Erro ao carregar categorias.", icon="❌")
     st.stop()
 
 categorias = resp_cat.json()["data"]
 if not categorias:
-    st.warning("Nenhuma categoria cadastrada. Cadastre uma categoria primeiro.")
+    st.toast("Nenhuma categoria cadastrada.", icon="⚠️")
     if st.button("Ir para Categorias"):
-        st.switch_page("pages/3_Categorias.py")
+        st.switch_page("pages/Categorias.py")
     st.stop()
 
 opcoes_cat = {c["nome"]: c["id"] for c in categorias}
@@ -34,7 +34,7 @@ if modo_edicao:
     if resp_med.status_code == 200:
         med_atual = resp_med.json()
     else:
-        st.error("Medicamento nao encontrado.")
+        st.toast("Medicamento nao encontrado.", icon="❌")
         st.stop()
 
 UNIDADES = ["mg", "ml", "g"]
@@ -58,9 +58,9 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Salvar", use_container_width=True):
         if not nome.strip():
-            st.warning("Informe o nome do medicamento.")
+            st.toast("Informe o nome do medicamento.", icon="⚠️")
         elif quantidade <= 0:
-            st.warning("A quantidade em estoque deve ser maior que zero.")
+            st.toast("A quantidade deve ser maior que zero.", icon="⚠️")
         else:
             payload = {
                 "nome": nome,
@@ -69,7 +69,6 @@ with col1:
                 "unidade": unidade,
                 "categoria_id": opcoes_cat[categoria],
             }
-
             if modo_edicao:
                 resp = requests.put(
                     f"{API_URL}/medicamento/{editando_id}",
@@ -84,16 +83,17 @@ with col1:
                 )
 
             if resp.status_code in (200, 201):
-                st.success("Medicamento salvo com sucesso!")
-                st.switch_page("pages/1_Medicamentos.py")
+                st.session_state["toast_msg"] = "Medicamento salvo com sucesso!"
+                st.session_state["toast_icon"] = "✅"
+                st.switch_page("pages/Medicamentos.py")
             elif resp.status_code == 404:
-                st.error("Categoria nao encontrada.")
+                st.toast("Categoria nao encontrada.", icon="❌")
             elif resp.status_code == 401:
-                st.error("Sessao expirada. Faca login novamente.")
-                st.switch_page("main.py")
+                st.toast("Sessao expirada.", icon="⚠️")
+                st.rerun()
             else:
-                st.error(f"Erro: {resp.text}")
+                st.toast("Erro ao salvar medicamento.", icon="❌")
 
 with col2:
     if st.button("Voltar", use_container_width=True):
-        st.switch_page("pages/1_Medicamentos.py")
+        st.switch_page("pages/Medicamentos.py")

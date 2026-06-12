@@ -94,10 +94,12 @@ class PaginatedVenda(BaseModel):
 class UsuarioCreate(BaseModel):
     username: str
     senha: str
+    email: str
 
 class UsuarioResponse(BaseModel):
     id: int
     username: str
+    email: str
     model_config = ConfigDict(from_attributes=True)
 
 class PaginatedUsuario(BaseModel):
