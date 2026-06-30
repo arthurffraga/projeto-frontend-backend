@@ -1,15 +1,9 @@
 [theme]
-# Mantém a base clara
 base="light"
-
-# Cor principal (botões, seleção, etc.) - Um vermelho vivo e claro
 primaryColor="#384B70" 
 
-# Cor do fundo principal da tela - Um branco com um toque super leve de vermelho/rosa
 backgroundColor="#F4F6FF"
 
-# Cor do fundo do menu lateral - Um vermelho bem clarinho/pastel
 secondaryBackgroundColor="#9CD5FF"
 
-# Cor dos textos - Um cinza bem escuro para facilitar a leitura
 textColor="#31333f"

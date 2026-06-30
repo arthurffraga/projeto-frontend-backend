@@ -20,9 +20,9 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Cadastrar", use_container_width=True):
         if not username.strip() or not email.strip() or not senha or not confirmar_senha:
-            st.warning("Preencha todos os campos.")
+            st.toast("Preencha todos os campos.")
         elif senha != confirmar_senha:
-            st.error("As senhas nao coincidem.")
+            st.toast("As senhas nao coincidem.")
         else:
             try:
                 resp = requests.post(
@@ -33,11 +33,11 @@ with col1:
                     st.session_state["cadastro_sucesso"] = True
                     st.switch_page("pages/Login.py")
                 elif resp.status_code == 409:
-                    st.error("Este email ja esta em uso.")
+                    st.toast("Este email ja esta em uso.")
                 else:
-                    st.error(f"Erro ao cadastrar: {resp.text}")
+                    st.toast(f"Erro ao cadastrar: {resp.text}")
             except requests.exceptions.ConnectionError:
-                st.error("Nao foi possivel conectar ao servidor.")
+                st.toast("Nao foi possivel conectar ao servidor.")
 
 with col2:
     if st.button("Voltar para login", use_container_width=True):
