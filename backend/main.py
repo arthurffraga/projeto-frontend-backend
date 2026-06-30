@@ -70,8 +70,10 @@ def postMedicamento(dados: MedicamentoCreate, db: Session = Depends(get_db), usu
         raise HTTPException(status_code=404, detail="Categoria não encontrada. Impossível criar o medicamento.")
     return medicamento
 @app.post("/usuario", response_model=UsuarioResponse, status_code=201)
-def postUsuario(dados: UsuarioCreate, db: Session = Depends(get_db),): # a pensar se vai colocar o cadeado do token   
+def postUsuario(dados: UsuarioCreate, db: Session = Depends(get_db),):
     usuario = crud.createUsuario(db, dados = dados)
+    if usuario == "email_duplicado":
+        raise HTTPException(status_code=409, detail="Este email ja esta em uso.")
     if not usuario:
         raise HTTPException(status_code=400, detail="Este nome de utilizador já está registado.")
     return usuario

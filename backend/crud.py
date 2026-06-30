@@ -164,17 +164,17 @@ def getVenda(db: Session, venda_id: int):
     return db.query(Venda).filter(Venda.id == venda_id).first()
 
 def createUsuario(db: Session, dados: UsuarioCreate):
-    usuarioExistente = db.query(Usuario).filter(Usuario.username == dados.username).first()    
-    if usuarioExistente:
-        return None
-    novoUsuario = Usuario(username=dados.username, senha=dados.senha)
+    emailExistente = db.query(Usuario).filter(Usuario.email == dados.email).first()
+    if emailExistente:
+        return "email_duplicado"
+    novoUsuario = Usuario(username=dados.username, email=dados.email, senha=dados.senha)
     db.add(novoUsuario)
     db.commit()
     db.refresh(novoUsuario)
     return novoUsuario
 
 def getUsuario(db: Session, username: str):
-    return db.query(Usuario).filter(Usuario.username == username).first()
+    return db.query(Usuario).filter(Usuario.email == username).first()
 
 def readUsuario(db: Session, page: int = 1, limit: int = 10):
     query = db.query(Usuario)   

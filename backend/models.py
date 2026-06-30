@@ -40,5 +40,6 @@ class ItemVenda(Base):
 class Usuario(Base):
     __tablename__ = "usuario"
     id = Column(Integer, primary_key=True)
+    email = Column(String, unique=True)
     username = Column(String, unique=True, index=True) 
     senha = Column(String)

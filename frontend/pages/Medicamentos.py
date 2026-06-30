@@ -5,22 +5,43 @@ import streamlit as st
 import requests
 from utils.auth import verificar_login, sidebar_usuario, get_headers, API_URL
 
-st.set_page_config(page_title="Medicamentos", page_icon="", layout="wide")
+st.set_page_config(page_title="Medicamentos", layout="wide")
 verificar_login()
 sidebar_usuario()
 
-st.title("Medicamentos")
+if "toast_msg" in st.session_state:
+    st.toast(st.session_state.pop("toast_msg"), icon=st.session_state.pop("toast_icon", None))
 
 if "confirmar_del_med" not in st.session_state:
     st.session_state.confirmar_del_med = None
 
-col_busca, col_btn = st.columns([4, 1])
-with col_busca:
-    busca = st.text_input("Buscar por nome", placeholder="Ex: Dipirona")
-with col_btn:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Novo", use_container_width=True):
-        st.switch_page("pages/2_Cadastro_Medicamento.py")
+@st.dialog("Confirmar exclusao")
+def dialog_excluir_med(med):
+    st.write(f"Tem certeza que deseja excluir **{med['nome']}**?")
+    st.write("Esta acao nao pode ser desfeita.")
+    col_sim, col_nao = st.columns(2)
+    with col_sim:
+        if st.button("Sim, excluir", use_container_width=True):
+            del_resp = requests.delete(
+                f"{API_URL}/medicamento/{med['id']}",
+                headers=get_headers()
+            )
+            st.session_state.confirmar_del_med = None
+            if del_resp.status_code == 204:
+                st.session_state["toast_msg"] = "Medicamento excluido com sucesso."
+                st.session_state["toast_icon"] = None
+            else:
+                st.session_state["toast_msg"] = "Erro ao excluir medicamento."
+                st.session_state["toast_icon"] = None
+            st.rerun()
+    with col_nao:
+        if st.button("Cancelar", use_container_width=True):
+            st.session_state.confirmar_del_med = None
+            st.rerun()
+
+st.title("Medicamentos")
+
+busca = st.text_input("Buscar por nome", placeholder="Ex: Dipirona")
 
 if "busca_med" not in st.session_state:
     st.session_state.busca_med = ""
@@ -39,10 +60,13 @@ resp = requests.get(
 )
 
 if resp.status_code != 200:
-    st.error("Erro ao carregar medicamentos.")
+    st.toast("Erro ao carregar medicamentos.")
     st.stop()
 
 dados = resp.json()
+
+if st.session_state.confirmar_del_med:
+    dialog_excluir_med(st.session_state.confirmar_del_med)
 
 if not dados["data"]:
     st.info("Nenhum medicamento encontrado.")
@@ -67,31 +91,11 @@ else:
         with col6:
             if st.button("Editar", key=f"edit_{med['id']}", use_container_width=True):
                 st.session_state["editar_med_id"] = med["id"]
-                st.switch_page("pages/2_Cadastro_Medicamento.py")
+                st.switch_page("pages/Cadastro_Medicamento.py")
         with col7:
             if st.button("Excluir", key=f"del_{med['id']}", use_container_width=True):
                 st.session_state.confirmar_del_med = {"id": med["id"], "nome": med["nome"]}
                 st.rerun()
-
-        if st.session_state.confirmar_del_med and st.session_state.confirmar_del_med["id"] == med["id"]:
-            st.warning(f"Tem certeza que deseja excluir **{med['nome']}**?")
-            col_sim, col_nao = st.columns(2)
-            with col_sim:
-                if st.button("Sim, excluir", key=f"sim_{med['id']}", use_container_width=True):
-                    del_resp = requests.delete(
-                        f"{API_URL}/medicamento/{med['id']}",
-                        headers=get_headers()
-                    )
-                    st.session_state.confirmar_del_med = None
-                    if del_resp.status_code == 204:
-                        st.success("Medicamento excluido.")
-                    else:
-                        st.error("Erro ao excluir.")
-                    st.rerun()
-            with col_nao:
-                if st.button("Cancelar", key=f"nao_{med['id']}", use_container_width=True):
-                    st.session_state.confirmar_del_med = None
-                    st.rerun()
 
 st.divider()
 col_ant, col_info, col_prox = st.columns([1, 2, 1])
