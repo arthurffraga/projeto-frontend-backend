@@ -1,13 +1,16 @@
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import crud
 import auth
+import servicoEmail
+import os
 from database import Base, engine, get_db
 from schemas import MedicamentoCreate, MedicamentoResponse, MedicamentoUpdate, CategoriaCreate, CategoriaResponse, CategoriaUpdate, PaginatedMedicamento, PaginatedCategoria, PaginatedVenda, VendaResponse, VendaCreate, UsuarioCreate, UsuarioResponse, PaginatedUsuario
 from typing import Optional
 from fastapi.security import OAuth2PasswordRequestForm
-
+from dotenv import load_dotenv
+load_dotenv()
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title= "API da Farmacia")
 
@@ -70,18 +73,21 @@ def postMedicamento(dados: MedicamentoCreate, db: Session = Depends(get_db), usu
         raise HTTPException(status_code=404, detail="Categoria não encontrada. Impossível criar o medicamento.")
     return medicamento
 @app.post("/usuario", response_model=UsuarioResponse, status_code=201)
-def postUsuario(dados: UsuarioCreate, db: Session = Depends(get_db),):
+def postUsuario(dados: UsuarioCreate, tarefasFundo: BackgroundTasks ,db: Session = Depends(get_db),):
     usuario = crud.createUsuario(db, dados = dados)
     if usuario == "email_duplicado":
         raise HTTPException(status_code=409, detail="Este email ja esta em uso.")
     if not usuario:
         raise HTTPException(status_code=400, detail="Este nome de utilizador já está registado.")
+    
+    tarefasFundo.add_task(servicoEmail.enviarEmailBoasVindas, usuario.email, usuario.username)
+
     return usuario
 
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     usuario = crud.getUsuario(db, username=form_data.username)
-    if not usuario or usuario.senha != form_data.password:
+    if not usuario or not auth.verificarSenha(form_data.password, usuario.senha):
         raise HTTPException(status_code=401, detail="Usuário ou senha incorretos", headers={"WWW-Authenticate": "Bearer"})
     
     token_acesso = auth.criarTokenAcesso(dados={"sub": usuario.username})

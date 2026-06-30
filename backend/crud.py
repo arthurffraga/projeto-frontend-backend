@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from models import Medicamento, Categoria, Venda, ItemVenda, Usuario
 from schemas import MedicamentoCreate, MedicamentoUpdate, CategoriaCreate, CategoriaUpdate, VendaCreate, UsuarioCreate
 import math
+import auth
 def readMedicamento(db: Session, nome: str = None, page: int = 1, limit: int = 5):
     query = db.query(Medicamento)
     if nome:
@@ -167,7 +168,9 @@ def createUsuario(db: Session, dados: UsuarioCreate):
     emailExistente = db.query(Usuario).filter(Usuario.email == dados.email).first()
     if emailExistente:
         return "email_duplicado"
-    novoUsuario = Usuario(username=dados.username, email=dados.email, senha=dados.senha)
+    
+    senhaCriptografada = auth.obterHashSenha(dados.senha)
+    novoUsuario = Usuario(username=dados.username, email=dados.email, senha=senhaCriptografada)
     db.add(novoUsuario)
     db.commit()
     db.refresh(novoUsuario)
