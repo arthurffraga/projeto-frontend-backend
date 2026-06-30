@@ -1,6 +1,6 @@
 import streamlit as st
 
-API_URL = "http://localhost:8000"
+API_URL = "https://projeto-frontend-backend-production.up.railway.app"
 
 def verificar_login():
     if "token" not in st.session_state:
