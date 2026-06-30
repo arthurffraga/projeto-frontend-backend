@@ -7,28 +7,32 @@ def enviarEmailBoasVindas(emailDestino: str, nomeUsuario: str):
     senhaEmail = os.getenv("EMAIL_SENHA")
 
     if not remetenteEmail or not senhaEmail:
-        print("Credenciais de email não configuradas no .env")
+        print("Credenciais de email nao configuradas no .env")
         return
 
     mensagemEmail = EmailMessage()
-    mensagemEmail["Subject"] = "Bem-vindo(a) ao Sistema da Farmácia!"
+    mensagemEmail["Subject"] = "Bem-vindo(a) ao Sistema da Farmacia!"
     mensagemEmail["From"] = remetenteEmail
     mensagemEmail["To"] = emailDestino
 
     conteudoHtml = f"""
     <html>
         <body>
-            <h2>Olá, {nomeUsuario}!</h2>
-            <p>O seu cadastro no <strong>Sistema da Farmácia</strong> foi realizado com sucesso.</p>
-            <p>Estamos felizes em ter você conosco.</p>
+            <h2>Ola, {nomeUsuario}!</h2>
+            <p>O seu cadastro no <strong>Sistema da Farmacia</strong> foi realizado com sucesso.</p>
+            <p>Estamos felizes em ter voce conosco.</p>
         </body>
     </html>
     """
     mensagemEmail.add_alternative(conteudoHtml, subtype="html")
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as servidorSmtp:
+        with smtplib.SMTP("smtp.gmail.com", 587) as servidorSmtp:
+            servidorSmtp.ehlo()
+            servidorSmtp.starttls()
+            servidorSmtp.ehlo()
             servidorSmtp.login(remetenteEmail, senhaEmail)
             servidorSmtp.send_message(mensagemEmail)
+            print("Email enviado com sucesso.")
     except Exception as erroDisparo:
         print(f"Erro ao enviar email: {erroDisparo}")
