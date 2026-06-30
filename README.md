@@ -24,4 +24,12 @@ uvicorn main:app --reload
 
 .venv\Scripts\activate
 cd frontend
-streamlit run main.py
+streamlit run main.py  
+
+## 5. Links de Produção
+
+Aqui estão os endereços das aplicações rodando na nuvem:
+
+- Frontend (Streamlit): https://projeto-frontend-backend-alilsdffqv3q7f66lhtlx4.streamlit.app
+- Backend (API FastAPI): https://projeto-frontend-backend-production.up.railway.app
+- Documentação da API (Swagger): https://projeto-frontend-backend-production.up.railway.app/docs
